@@ -2,17 +2,28 @@
 #include <linux/module.h>
 #include <linux/printk.h>
 #include <linux/fprobe.h>
-#include <linux/ftrace.h>
-#include <linux/ptrace.h>
+//#include <linux/ftrace.h>
+//#include <linux/ptrace.h>
 
 static int trace_read(struct fprobe *fp, unsigned long entry_ip, unsigned long ret_ip, struct pt_regs *regs, void *entry_data){
-    pr_info("[vfs_trace] A read operation has been detected!");
-
+    //pr_info("[vfs_trace] A read operation has been detected!");
+  
     unsigned long first = regs->di;
     unsigned long second = regs->si;
     unsigned long third = regs->dx;
 
-    pr_info("[vfs_trace] %lu, %lu, %lu", first, second, third);
+    struct file *file = (struct file *)regs->di;
+    char path_buf[256];
+    char *tmp;
+
+    tmp = d_path(&file->f_path, path_buf, sizeof(path_buf));
+	
+
+    if ((strcmp(tmp, "/dev/kmsg") == 0) || (strcmp(tmp, "/proc/kmsg") == 0)){
+	    return 0;
+    }
+
+    pr_info("[vfs_trace] READ: %lu, %s, %lu", first, tmp, third);
     //pr_info("[vfs_trace] Read operation size %llu", third);
 
     return 0;
