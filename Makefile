@@ -1,8 +1,8 @@
-SRCS = main.o
+SRCS = main.o vfs_probes.o
 MODULE_NAME = vfs_tracer
 
 obj-m := $(MODULE_NAME).o
-$(MODULE_NAME)-y += $(SRCS)
+$(MODULE_NAME)-objs += $(SRCS)
 
 PWD := $(CURDIR)
 
