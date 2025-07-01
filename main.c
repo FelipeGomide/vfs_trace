@@ -35,18 +35,12 @@ static int create_probes(void){
 }
 
 static int unregister_probes(void){
-    int count = 0;
-
-    count += read_probe.nmissed;
     unregister_fprobe(&read_probe);
-    count += write_probe.nmissed;
     unregister_fprobe(&write_probe);
-    count += open_probe.nmissed;
     unregister_fprobe(&open_probe);
-    count += close_probe.nmissed;
     unregister_fprobe(&close_probe);
 
-    return count;
+    return 0;
 }
 
 static int __init trace_setup(void){
@@ -62,8 +56,8 @@ static int __init trace_setup(void){
 }
 
 static void __exit trace_close(void){
-    const int misses = unregister_probes();
-    pr_info("[vfs_trace] Exiting module. Identified %d misses. \n", misses);
+    unregister_probes();
+    pr_info("[vfs_trace] Exiting module.");
 }
 
 module_init(trace_setup); 

@@ -61,7 +61,7 @@ void trace_open(struct fprobe *fp, unsigned long entry_ip, unsigned long ret_ip,
     pr_info("[vfs_trace] OPEN %s %s", path, current->comm);
 };
 
-int trace_vfs_close(struct fprobe *fp, unsigned long entry_ip, unsigned long ret_ip, struct pt_regs *regs, void *entry_data){ 
+int trace_filp_close(struct fprobe *fp, unsigned long entry_ip, unsigned long ret_ip, struct pt_regs *regs, void *entry_data){ 
     unsigned long first = regs->di;
     struct file *filp = (struct file *)first;
 
@@ -70,8 +70,21 @@ int trace_vfs_close(struct fprobe *fp, unsigned long entry_ip, unsigned long ret
 
     char path_buf[256];
     char *path = d_path(&filp->f_path, path_buf, sizeof(path_buf));
+    pr_info("[vfs_trace] CLOSE filp_close %s %s\n", path, current->comm);
+    return 0;
+};
 
-    pr_info("[vfs_trace] CLOSE %s %s\n", path, current->comm);
+int trace_fput_close(struct fprobe *fp, unsigned long entry_ip, unsigned long ret_ip, struct pt_regs *regs, void *entry_data){ 
+    unsigned long first = regs->di;
+    struct file *filp = (struct file *)first;
+
+    if (!filp || !filp->f_path.dentry)
+        return 0;
+
+    char path_buf[256];
+    char *path = d_path(&filp->f_path, path_buf, sizeof(path_buf));
+    if (!IS_ERR(path))
+        pr_info("[vfs_trace] CLOSE fput %s %s\n", path, current->comm);
     return 0;
 };
 
@@ -88,6 +101,5 @@ struct fprobe open_probe = {
 };
 
 struct fprobe close_probe = {
-    .entry_handler = trace_vfs_close,
+    .entry_handler = trace_filp_close,
 };
-
