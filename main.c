@@ -1,8 +1,9 @@
+#include "probes.h"
+
 #include <linux/init.h>
 #include <linux/module.h>
 #include <linux/printk.h>
 #include <linux/fprobe.h>
-#include "vfs_probes.h"
 #include <linux/ftrace.h>
 #include <linux/ptrace.h>
 
@@ -21,14 +22,31 @@ static int create_probes(void){
         return 1;
     }
 
+    error = register_fprobe(&open_probe, "do_filp_open", NULL);
+
+    if (error != 0){
+        pr_err("[vfs_trace] Error: Could not create OPEN probe! Code: %d", error);
+        return 1;
+    }
+
+    register_fprobe(&close_probe,"filp_close", NULL);
+
     return 0;
 }
 
 static int unregister_probes(void){
-    unregister_fprobe(&read_probe);
-    unregister_fprobe(&write_probe);
+    int count = 0;
 
-    return 0;
+    count += read_probe.nmissed;
+    unregister_fprobe(&read_probe);
+    count += write_probe.nmissed;
+    unregister_fprobe(&write_probe);
+    count += open_probe.nmissed;
+    unregister_fprobe(&open_probe);
+    count += close_probe.nmissed;
+    unregister_fprobe(&close_probe);
+
+    return count;
 }
 
 static int __init trace_setup(void){

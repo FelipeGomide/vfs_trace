@@ -1,4 +1,4 @@
-SRCS = main.o vfs_probes.o
+SRCS = main.o probes.o
 MODULE_NAME = vfs_tracer
 
 obj-m := $(MODULE_NAME).o
